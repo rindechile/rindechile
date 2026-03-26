@@ -38,6 +38,17 @@ export function TableFilters({
   const [isSortSheetOpen, setIsSortSheetOpen] = useState(false);
   const [isMoreFiltersOpen, setIsMoreFiltersOpen] = useState(false);
 
+  const municipalityCombobox = (
+    <TableCombobox
+      options={filterOptions.municipalities}
+      value={municipalityName ?? ""}
+      onValueChange={(value) => onMunicipalityChange(value || null)}
+      placeholder="Filtrar por municipio..."
+      searchPlaceholder="Buscar municipios..."
+      emptyText="No se encontraron municipios."
+    />
+  );
+
   return (
     <div className="space-y-3">
       {/* Row 1: Search + Sort Button (mobile only) */}
@@ -47,7 +58,6 @@ export function TableFilters({
           onChange={(value) => onSearchChange(value || null)}
           placeholder="Buscar item o codigo..."
         />
-        {/* Mobile sort button */}
         <Button
           variant="outline"
           size="icon"
@@ -71,28 +81,12 @@ export function TableFilters({
             </Button>
           </CollapsibleTrigger>
           <CollapsibleContent className="pt-2">
-            <TableCombobox
-              options={filterOptions.municipalities}
-              value={municipalityName ?? ""}
-              onValueChange={(value) => onMunicipalityChange(value || null)}
-              placeholder="Filtrar por municipio..."
-              searchPlaceholder="Buscar municipios..."
-              emptyText="No se encontraron municipios."
-            />
+            {municipalityCombobox}
           </CollapsibleContent>
         </Collapsible>
       </div>
-
-      {/* Tablet+: Always visible municipality filter */}
       <div className="hidden tablet:block">
-        <TableCombobox
-          options={filterOptions.municipalities}
-          value={municipalityName ?? ""}
-          onValueChange={(value) => onMunicipalityChange(value || null)}
-          placeholder="Filtrar por municipio..."
-          searchPlaceholder="Buscar municipios..."
-          emptyText="No se encontraron municipios."
-        />
+        {municipalityCombobox}
       </div>
 
       {/* Row 3: Filter chips */}

@@ -80,10 +80,12 @@ export async function GET(request: NextRequest) {
 
     // Apply search filter (searches item name and ChileCompra ID)
     if (searchQuery) {
+      // Escape special LIKE characters to prevent unintended pattern matching
+      const escapedSearch = searchQuery.replace(/[%_]/g, '\\$&');
       whereConditions.push(
         or(
-          like(items.name, `%${searchQuery}%`),
-          like(purchases.chilecompra_code, `%${searchQuery}%`)
+          like(items.name, `%${escapedSearch}%`),
+          like(purchases.chilecompra_code, `${escapedSearch}%`)
         )
       );
     }
@@ -158,6 +160,8 @@ export async function GET(request: NextRequest) {
         regionId,
         municipalityId,
       },
+    }, {
+      headers: { 'Cache-Control': 'public, max-age=300, s-maxage=300, stale-while-revalidate=60' },
     });
   } catch (error) {
     console.error('Error fetching purchases data:', error);

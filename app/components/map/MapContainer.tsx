@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react';
 import { ChileMap } from './ChileMap';
-import { MapLegend } from './MapLegend';
 import { MapLoadingState } from './MapLoadingState';
 import { MapErrorState } from './MapErrorState';
 import { useMapContext } from '@/app/contexts/MapContext';
@@ -66,19 +65,15 @@ export function MapContainer() {
 
       {/* Main Content: Map */}
       <div className="flex-1 overflow-hidden">
-        <div className="w-full h-full flex flex-col">
-          <div className="flex-1 overflow-hidden">
-            <ChileMap
-              regionsData={regionsData}
-              municipalitiesData={municipalitiesData}
-              loadingMunicipalities={loadingMunicipalities}
-              onRegionClick={handleRegionClick}
-              onMunicipalityClick={handleMunicipalityClick}
-              viewState={viewState}
-              colorScale={colorScale}
-            />
-          </div>
-        </div>
+        <ChileMap
+          regionsData={regionsData}
+          municipalitiesData={municipalitiesData}
+          loadingMunicipalities={loadingMunicipalities}
+          onRegionClick={handleRegionClick}
+          onMunicipalityClick={handleMunicipalityClick}
+          viewState={viewState}
+          colorScale={colorScale}
+        />
       </div>
 
     </div>

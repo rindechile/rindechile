@@ -2,7 +2,6 @@
 
 import type { DetailPanelData } from '@/app/contexts/MapContext';
 import { Badge } from '@/app/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/app/components/ui/card';
 import { MetricCard } from '@/app/components/ui/metric-card';
 import { AnomaliesAreaChart } from '@/app/components/ui/anomalies-area-chart';
 import { TreemapChart } from '@/app/components/map/TreemapChart';
@@ -59,10 +58,10 @@ export function DetailPanel({ data }: DetailPanelProps) {
   // Empty state when no data
   if (!data) {
     return (
-      <div className="h-full flex items-center justify-center rounded-lg border border-border bg-card">
+      <div className="h-full flex items-center justify-center rounded-lg border border-border bg-card" role="status">
         <div className="text-center px-6 py-12">
           <svg
-            className="mx-auto h-12 w-12 text-gray-400 mb-4"
+            className="mx-auto h-12 w-12 text-muted-foreground mb-4"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -75,27 +74,16 @@ export function DetailPanel({ data }: DetailPanelProps) {
               d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
             />
           </svg>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <h3 className="text-lg font-medium text-foreground mb-2">
             Selecciona una región en el mapa
           </h3>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             Haz clic en el mapa para ver datos detallados de sobreprecio
           </p>
         </div>
       </div>
     );
   }
-
-  // Get title and subtitle based on level
-  const getTitle = () => {
-    if (data.level === 'country') {
-      return data.name;
-    }
-    if (data.level === 'region') {
-      return data.name;
-    }
-    return data.name; // municipality
-  };
 
   // Create a unique key based on the current selection to trigger animations on change
   const contentKey = data.level === 'country'
@@ -111,7 +99,7 @@ export function DetailPanel({ data }: DetailPanelProps) {
       <div key={`header-${contentKey}`} className="p-6 animate-fade-in border-b shrink-0">
         <div className="flex items-start justify-between mb-2">
 
-          <h2 className="text-2xl font-semibold">{getTitle()}</h2>
+          <h2 className="text-2xl font-semibold">{data.name}</h2>
 
           <Badge variant={severityInfo.variant} className="text-sm hidden shrink-0">
             {severityInfo.level}
@@ -145,7 +133,7 @@ export function DetailPanel({ data }: DetailPanelProps) {
             {data.level === 'municipality' && data.budgetPerCapita !== null && (
               <MetricCard
                 variant="ghost"
-                value={data.budgetPerCapita !== null ? formatCurrency(data.budgetPerCapita) : 'No disponible'}
+                value={formatCurrency(data.budgetPerCapita)}
                 label= "Per Cápita"
               />
             )}
@@ -160,7 +148,7 @@ export function DetailPanel({ data }: DetailPanelProps) {
         <div className="flex-1 min-h-0 w-full flex items-center">
           {loadingTreemap && <TreemapSkeleton />}
           {treemapError && (
-            <div className="flex items-center justify-center h-full">
+            <div className="flex items-center justify-center h-full" role="alert">
               <div className="text-center">
                 <svg
                   className="mx-auto h-12 w-12 text-destructive mb-4"
@@ -183,8 +171,7 @@ export function DetailPanel({ data }: DetailPanelProps) {
             <div className="w-full">
               <TreemapChart
                 data={treemapData}
-                level={getTreemapProps().level}
-                code={getTreemapProps().code}
+                {...getTreemapProps()}
               />
             </div>
           )}

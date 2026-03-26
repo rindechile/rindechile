@@ -168,6 +168,19 @@
       opacity: 1;
       transform: none;
     }
+
+    .animate-stagger-1,
+    .animate-stagger-2,
+    .animate-stagger-3,
+    .animate-stagger-4,
+    .animate-stagger-5 {
+      animation-delay: 0s;
+    }
+
+    .animate-collapsible-down,
+    .animate-collapsible-up {
+      animation: none;
+    }
   }
 
   /* Article page - LaTeX-like formula styling */

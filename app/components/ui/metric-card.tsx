@@ -1,3 +1,5 @@
+import { cn } from '@/lib/utils';
+
 interface MetricCardProps {
   value: string;
   label: string;
@@ -12,10 +14,10 @@ const variantStyles = {
   ghost: 'bg-transparent border border-border',
 };
 
-export function MetricCard({ value, label, variant = 'default', className = '' }: MetricCardProps) {
+export function MetricCard({ value, label, variant = 'default', className }: MetricCardProps) {
   return (
-    <div className={`text-center ${className}`}>
-      <p className={`text-xl tablet:text-2x font-semibold px-8 py-4 rounded-md ${variantStyles[variant]}`}>
+    <div className={cn('text-center', className)}>
+      <p className={cn('text-xl tablet:text-2x font-semibold px-8 py-4 rounded-md', variantStyles[variant])}>
         {value}
       </p>
       <p className="text-xs font-medium mt-2">{label}</p>

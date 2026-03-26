@@ -18,6 +18,13 @@ export const metadata: Metadata = {
   title: "RindeChile - Transparencia en Compras Municipales",
   description: "Plataforma dedicada a monitorear y promover la transparencia en las compras municipales en Chile.",
   metadataBase: new URL("https://rindechile.cl"),
+  robots: {
+    index: true,
+    follow: true,
+  },
+  alternates: {
+    canonical: "https://rindechile.cl",
+  },
   openGraph: {
     type: "website",
     locale: "es_CL",
@@ -49,9 +56,38 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
+      <head>
+        <link rel="preload" href="/data/chile_regions.json" as="fetch" crossOrigin="anonymous" />
+      </head>
       <body
         className={`${manrope.variable} antialiased bg-background text-foreground`}
       >
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify([
+              {
+                "@context": "https://schema.org",
+                "@type": "Organization",
+                name: "RindeChile",
+                url: "https://rindechile.cl",
+                logo: "https://rindechile.cl/logo-full.svg",
+                description:
+                  "Plataforma dedicada a monitorear y promover la transparencia en las compras municipales en Chile.",
+              },
+              {
+                "@context": "https://schema.org",
+                "@type": "WebSite",
+                name: "RindeChile",
+                url: "https://rindechile.cl",
+                description:
+                  "Plataforma dedicada a monitorear y promover la transparencia en las compras municipales en Chile.",
+                inLanguage: "es",
+              },
+            ]),
+          }}
+        />
+
         {/* Skip to main content link for keyboard users */}
         <a href="#main-content" className="skip-link">
           Saltar al contenido principal

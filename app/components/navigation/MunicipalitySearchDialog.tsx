@@ -117,6 +117,9 @@ export function MunicipalitySearchDialog({
         autoFocus
       />
       <CommandList className="max-h-[400px]">
+        <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+          {loading ? 'Cargando comunas...' : `${searchResults.length} comuna${searchResults.length !== 1 ? 's' : ''} encontrada${searchResults.length !== 1 ? 's' : ''}`}
+        </span>
         {loading && (
           <div className="py-6 text-center text-sm text-muted-foreground">
             Cargando comunas...

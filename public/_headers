@@ -1,0 +1,19 @@
+/*
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), camera=(), microphone=()
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
+
+/data/*
+  Cache-Control: public, max-age=604800, immutable
+
+/data/municipalities_by_region/*
+  Cache-Control: public, max-age=604800, immutable
+
+/*.svg
+  Cache-Control: public, max-age=31536000, immutable
+
+/opengraph.png
+  Cache-Control: public, max-age=31536000, immutable

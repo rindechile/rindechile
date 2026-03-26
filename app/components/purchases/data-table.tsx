@@ -11,6 +11,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { ExternalLink } from "lucide-react";
+import { getChileCompraUrl } from "@/lib/utils";
 
 import {
   Table,
@@ -132,16 +133,22 @@ export function DataTable<TData, TValue>({
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
-                ))}
+                {headerGroup.headers.map((header) => {
+                  const sorted = header.column.getIsSorted();
+                  return (
+                    <TableHead
+                      key={header.id}
+                      aria-sort={sorted === 'asc' ? 'ascending' : sorted === 'desc' ? 'descending' : undefined}
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  );
+                })}
                 <TableHead className="w-12" aria-label="Acción">
                   <span className="sr-only">Acción</span>
                 </TableHead>
@@ -154,7 +161,7 @@ export function DataTable<TData, TValue>({
               table.getRowModel().rows.map((row) => {
                 const handleRowActivation = () => {
                   const chilecompraId = (row.original as { chilecompra_code: string }).chilecompra_code;
-                  window.open(`https://www.mercadopublico.cl/PurchaseOrder/Modules/PO/DetailsPurchaseOrder.aspx?codigoOC=${chilecompraId}`, '_blank');
+                  window.open(getChileCompraUrl(chilecompraId), '_blank');
                 };
 
                 return (

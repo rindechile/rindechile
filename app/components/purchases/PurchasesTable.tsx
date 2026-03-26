@@ -51,40 +51,70 @@ export function PurchasesTable() {
   const [error, setError] = useState<string | null>(null);
   const { detailPanelData } = useMapContext();
 
+  // Build geographic scope params (shared between both effects)
+  const buildScopeParams = () => {
+    const params = new URLSearchParams();
+    if (detailPanelData) {
+      params.append('level', detailPanelData.level);
+      if (detailPanelData.level === 'region') {
+        params.append('regionId', detailPanelData.regionId);
+      } else if (detailPanelData.level === 'municipality') {
+        params.append('municipalityId', detailPanelData.municipalityId.toString());
+      }
+    } else {
+      params.append('level', 'country');
+    }
+    return params;
+  };
+
+  // Fetch filter options only when geographic scope changes
   useEffect(() => {
     let cancelled = false;
 
-    async function fetchData() {
+    async function fetchFilters() {
+      try {
+        const params = buildScopeParams();
+        const response = await fetch(`/api/purchases/filters?${params.toString()}`);
+        if (!response.ok) throw new Error('Failed to fetch filters');
+
+        const result = await response.json() as {
+          success: boolean;
+          data?: FilterOptions;
+          error?: string;
+        };
+
+        if (!cancelled && result.success && result.data) {
+          setFilterOptions(result.data);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          console.error('Error fetching filter options:', err);
+        }
+      }
+    }
+
+    fetchFilters();
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [detailPanelData]);
+
+  // Fetch purchase data when any parameter changes
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchPurchases() {
       try {
         setLoading(true);
         setError(null);
 
-        // Build query parameters based on current view
-        const params = new URLSearchParams();
-
-        if (detailPanelData) {
-          params.append('level', detailPanelData.level);
-
-          if (detailPanelData.level === 'region') {
-            params.append('regionId', detailPanelData.regionId);
-          } else if (detailPanelData.level === 'municipality') {
-            params.append('municipalityId', detailPanelData.municipalityId.toString());
-          }
-        } else {
-          params.append('level', 'country');
-        }
-
-        // Add pagination parameters
+        const params = buildScopeParams();
         params.append('page', pagination.page.toString());
         params.append('limit', pagination.limit.toString());
 
-        // Add sorting parameters
         if (sorting) {
           params.append('sortBy', sorting.id);
           params.append('sortOrder', sorting.desc ? 'desc' : 'asc');
         }
-
-        // Add filter parameters
         if (filters.search) {
           params.append('search', filters.search);
         }
@@ -92,42 +122,24 @@ export function PurchasesTable() {
           params.append('municipalityName', filters.municipalityName);
         }
 
-        // Fetch both purchases data and filter options in parallel
-        const [purchasesResponse, filtersResponse] = await Promise.all([
-          fetch(`/api/purchases?${params.toString()}`),
-          fetch(`/api/purchases/filters?${params.toString()}`),
-        ]);
+        const response = await fetch(`/api/purchases?${params.toString()}`);
+        if (!response.ok) throw new Error('Failed to fetch data');
 
-        if (!purchasesResponse.ok || !filtersResponse.ok) {
-          throw new Error('Failed to fetch data');
-        }
-
-        const [purchasesResult, filtersResult] = await Promise.all([
-          purchasesResponse.json() as Promise<{
-            success: boolean;
-            data?: Purchase[];
-            pagination?: PaginationInfo;
-            error?: string;
-          }>,
-          filtersResponse.json() as Promise<{
-            success: boolean;
-            data?: FilterOptions;
-            error?: string;
-          }>,
-        ]);
+        const result = await response.json() as {
+          success: boolean;
+          data?: Purchase[];
+          pagination?: PaginationInfo;
+          error?: string;
+        };
 
         if (!cancelled) {
-          if (purchasesResult.success && purchasesResult.data) {
-            setData(purchasesResult.data);
-            if (purchasesResult.pagination) {
-              setPagination(purchasesResult.pagination);
+          if (result.success && result.data) {
+            setData(result.data);
+            if (result.pagination) {
+              setPagination(result.pagination);
             }
           } else {
-            setError(purchasesResult.error || 'Failed to load purchases data');
-          }
-
-          if (filtersResult.success && filtersResult.data) {
-            setFilterOptions(filtersResult.data);
+            setError(result.error || 'Failed to load purchases data');
           }
         }
       } catch (err) {
@@ -142,11 +154,9 @@ export function PurchasesTable() {
       }
     }
 
-    fetchData();
-
-    return () => {
-      cancelled = true;
-    };
+    fetchPurchases();
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [detailPanelData, pagination.page, pagination.limit, sorting, filters]);
 
   const handlePageChange = (newPage: number) => {

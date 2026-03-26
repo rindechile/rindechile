@@ -4,6 +4,7 @@ import type { Purchase } from "./columns";
 import { ExcessBadge } from "./ExcessBadge";
 import { PMABadge } from "./PMABadge";
 import { ExternalLink } from "lucide-react";
+import { formatCurrency, formatNumber, toSentenceCase, getChileCompraUrl } from "@/lib/utils";
 
 interface PurchaseCardProps {
   purchase: Purchase;
@@ -12,26 +13,13 @@ interface PurchaseCardProps {
 
 const formatPrice = (price: number | null): string => {
   if (price === null) return "N/A";
-  return new Intl.NumberFormat("es-CL", {
-    style: "currency",
-    currency: "CLP",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(price);
-};
-
-const formatQuantity = (quantity: number): string => {
-  return new Intl.NumberFormat("es-CL").format(quantity);
-};
-
-const toSentenceCase = (text: string): string => {
-  return text.toLowerCase().charAt(0).toUpperCase() + text.toLowerCase().slice(1);
+  return formatCurrency(price);
 };
 
 export function PurchaseCard({ purchase, animationDelay = 0 }: PurchaseCardProps) {
   const handleClick = () => {
     window.open(
-      `https://www.mercadopublico.cl/PurchaseOrder/Modules/PO/DetailsPurchaseOrder.aspx?codigoOC=${purchase.chilecompra_code}`,
+      getChileCompraUrl(purchase.chilecompra_code),
       "_blank"
     );
   };
@@ -77,7 +65,7 @@ export function PurchaseCard({ purchase, animationDelay = 0 }: PurchaseCardProps
       <div className="grid grid-cols-3 gap-4 px-4 py-4 border-t border-border">
         <div>
           <p className="text-xs text-muted-foreground">Cantidad</p>
-          <p className="text-sm font-medium">{formatQuantity(purchase.quantity)}</p>
+          <p className="text-sm font-medium">{formatNumber(purchase.quantity)}</p>
         </div>
         <div>
           <p className="text-xs text-muted-foreground">Precio Unitario</p>

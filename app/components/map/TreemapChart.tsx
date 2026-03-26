@@ -51,8 +51,8 @@ export function TreemapChart({ data: initialData, level, code }: TreemapChartPro
       }
     };
 
-    document.addEventListener('click', handleClickOutside);
-    document.addEventListener('touchstart', handleClickOutside);
+    document.addEventListener('click', handleClickOutside, { passive: true });
+    document.addEventListener('touchstart', handleClickOutside, { passive: true });
 
     return () => {
       document.removeEventListener('click', handleClickOutside);

@@ -9,10 +9,8 @@ import {
 } from "@/app/components/ui/sheet";
 import { Check, ArrowUp, ArrowDown } from "lucide-react";
 
-export type SortingState = {
-  id: string;
-  desc: boolean;
-} | null;
+import type { ServerSortingState as SortingState } from "./PurchasesTable";
+export type { SortingState };
 
 interface MobileSortSheetProps {
   currentSort: SortingState;

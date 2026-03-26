@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { formatCurrency as formatCurrencyFn, formatNumber as formatNumberFn } from '@/lib/utils';
 
 /**
  * Custom hook for number, currency, and percentage formatting
@@ -6,7 +7,7 @@ import { useCallback } from 'react';
  */
 export function useFormatters() {
   const formatNumber = useCallback((num: number) => {
-    return new Intl.NumberFormat('es-CL').format(num);
+    return formatNumberFn(num);
   }, []);
 
   const formatPercentage = useCallback((num: number, decimals = 2) => {
@@ -14,12 +15,7 @@ export function useFormatters() {
   }, []);
 
   const formatCurrency = useCallback((value: number) => {
-    return new Intl.NumberFormat('es-CL', {
-      style: 'currency',
-      currency: 'CLP',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
+    return formatCurrencyFn(value);
   }, []);
 
   return { formatNumber, formatPercentage, formatCurrency };
