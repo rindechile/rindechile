@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import * as d3 from 'd3';
+import { TreemapTooltip } from './TreemapTooltip';
 import type {
   MapViewState,
   EnrichedRegionData,
@@ -9,6 +10,7 @@ import type {
   ColorScale,
 } from '@/types/map';
 import { useViewportSize } from './hooks/useViewportSize';
+import { decimalToRoman } from '@/lib/number-to-roman';
 
 interface ChileMapProps {
   regionsData: EnrichedRegionData[];
@@ -33,6 +35,25 @@ export function ChileMap({
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 600, height: 600 });
   
+  // Refs para evitar re-renders innecesarios
+  const hoverDataRef = useRef<{
+    name: string;
+    code: string;
+    x: number;
+    y: number;
+  } | null>(null);
+
+  // State para tooltip
+  const [tooltipData, setTooltipData] = useState<{
+    name: string;
+    secondary?: string;
+    x: number;
+    y: number;
+  } | null>(null);
+  
+  // RequestAnimationFrame ref
+  const rafRef = useRef<number | null>(null);
+
   // Use custom hooks
   const viewportSize = useViewportSize();
 
@@ -54,7 +75,7 @@ export function ChileMap({
   // Setup D3 projection centered on Chile or selected region
   const projection = useCallback(() => {
     const baseProjection = d3.geoMercator();
-    
+
     if (viewState.level === 'region' && viewState.selectedRegion && municipalitiesData.length > 0) {
       // Use D3's fitExtent to automatically calculate correct projection parameters
       const padding = 20;
@@ -65,11 +86,11 @@ export function ChileMap({
           viewState.selectedRegion
         );
     }
-    
+
     // Default: center on Chile with breakpoint-specific values
     let scale: number;
     let rotate: [number, number, number];
-    
+
     if (viewportSize === 'mobile') {
       scale = 800;
       rotate = [70.5, 37, 0];
@@ -80,7 +101,7 @@ export function ChileMap({
       scale = 800;
       rotate = [70.5, 37, 0];
     }
-    
+
     return baseProjection
       .rotate(rotate)
       .center([0, 0])
@@ -100,7 +121,7 @@ export function ChileMap({
       if (overpricing === null || overpricing === undefined) {
         return '#E5E7EB'; // Gray for no data
       }
-      
+
       // Find the appropriate tier based on threshold
       for (let i = colorScale.breakpoints.length - 1; i >= 0; i--) {
         if (overpricing >= colorScale.breakpoints[i].threshold) {
@@ -108,7 +129,7 @@ export function ChileMap({
           return colorScale.breakpoints[i].texture || colorScale.breakpoints[i].color;
         }
       }
-      
+
       // Default to first tier if below all thresholds
       return colorScale.breakpoints[0]?.texture || colorScale.breakpoints[0]?.color || '#E5E7EB';
     },
@@ -139,6 +160,58 @@ export function ChileMap({
   const styles = getComputedStyle(document.documentElement);
   const colorStroke = styles.getPropertyValue('--color-secondary').trim();
 
+  // Activar tooltip con mouseenter
+  const handleHoverIn = useCallback(
+    (name: string, code: string, e: React.MouseEvent) => {
+      const data = {
+        name,
+        secondary: code ? decimalToRoman(parseInt(code)) : undefined,
+        x: e.clientX,
+        y: e.clientY,
+      };
+      hoverDataRef.current = { name, code, x: e.clientX, y: e.clientY };
+      setTooltipData(data);
+    },
+    [],
+  );
+
+  // Actualizar posición con mousemove optimizado usando requestAnimationFrame
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (!hoverDataRef.current) return;
+
+      // Cancelar raf anterior
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
+
+      // Usar requestAnimationFrame para evitar muchos re-renders
+      rafRef.current = requestAnimationFrame(() => {
+        if (hoverDataRef.current) {
+          hoverDataRef.current.x = e.clientX;
+          hoverDataRef.current.y = e.clientY;
+          setTooltipData((current) =>
+            current ? { ...current, x: e.clientX, y: e.clientY } : current
+          );
+        }
+      });
+    },
+    [],
+  );
+
+  // Desactivar tooltip con mouseleave
+  const handleHoverOut = useCallback(() => {
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+    
+    hoverDataRef.current = null;
+    setTooltipData(null);
+  }, []);
+
+  
+
   return (
     <div ref={containerRef} className="relative">
       <svg
@@ -154,29 +227,34 @@ export function ChileMap({
               const regionName = region.feature.properties.Region || `Región ${regionCode}`;
               const overpricing = region.averageOverpricing;
               const overpricingText = overpricing !== null && overpricing !== undefined
-                ? `sobreprecio promedio ${(overpricing * 100).toFixed(1)}%`
+                  ? `sobreprecio promedio ${(overpricing * 100).toFixed(1)}%`
                 : 'sin datos';
 
               return (
-                <path
-                  key={regionCode}
+                  <path
+                    key={regionCode}
                   d={pathGenerator(region.feature) || ''}
-                  fill={getFill(overpricing)}
-                  stroke={colorStroke}
-                  strokeWidth={0.6}
-                  className="cursor-pointer transition-all duration-200 hover:opacity-80 hover:stroke-[1.2px] focus:outline-none focus:stroke-[2px] focus:opacity-80"
+                    fill={getFill(overpricing)}
+                    stroke={colorStroke}
+                    strokeWidth={0.6}
+                    className="cursor-pointer transition-all duration-200 hover:opacity-80 hover:stroke-[1.2px] focus:outline-none focus:stroke-[2px] focus:opacity-80"
                   style={{ outline: 'none' }}
-                  tabIndex={0}
-                  role="button"
-                  aria-label={`${regionName}, ${overpricingText}. Presiona Enter para ver municipalidades.`}
-                  onClick={() => handleRegionClick(regionCode)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      handleRegionClick(regionCode);
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`${regionName}, ${overpricingText}. Presiona Enter para ver municipalidades.`}
+                    onClick={() => handleRegionClick(regionCode)}
+                    onMouseEnter={(e: React.MouseEvent<SVGPathElement>) =>
+                      handleHoverIn(regionName, regionCode, e)
                     }
-                  }}
-                />
+                    onMouseMove={handleMouseMove}
+                    onMouseLeave={handleHoverOut}
+                    onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleRegionClick(regionCode);
+                      }
+                    }}
+                  />
               );
             })}
 
@@ -187,7 +265,7 @@ export function ChileMap({
               const municipalityName = municipality.feature.properties.Comuna || `Comuna ${municipalityCode}`;
               const overpricing = municipality.data?.porcentaje_sobreprecio;
               const overpricingText = overpricing !== null && overpricing !== undefined
-                ? `sobreprecio ${(overpricing * 100).toFixed(1)}%`
+                  ? `sobreprecio ${(overpricing * 100).toFixed(1)}%`
                 : 'sin datos';
 
               return (
@@ -203,6 +281,11 @@ export function ChileMap({
                   role="button"
                   aria-label={`${municipalityName}, ${overpricingText}. Presiona Enter para ver detalles.`}
                   onClick={() => handleMunicipalityClick(municipalityCode)}
+                  onMouseEnter={(e: React.MouseEvent<SVGPathElement>) =>
+                    handleHoverIn(municipalityName, "", e)
+                  }
+                  onMouseMove={handleMouseMove}
+                  onMouseLeave={handleHoverOut}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
@@ -227,6 +310,8 @@ export function ChileMap({
         </g>
       </svg>
 
+      {/* Tooltip */}
+      <TreemapTooltip data={tooltipData} />
     </div>
   );
 }
