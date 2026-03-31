@@ -3,8 +3,9 @@ import { useFormatters } from '@/app/lib/hooks/useFormatters';
 interface TreemapTooltipProps {
   data: {
     name: string;
-    value: number;
-    overpricingRate: number;
+    value?: number;
+    secondary?: string;
+    overpricingRate?: number;
     x: number;
     y: number;
   } | null;
@@ -29,7 +30,7 @@ export function TreemapTooltip({ data }: TreemapTooltipProps) {
         >
           <div className="text-sm font-medium">{data.name}</div>
           <div className="text-xs text-muted-foreground">
-            {formatCurrency(data.value)}
+            {data.secondary ?? (data.value !== undefined ? formatCurrency(data.value) : '')}
           </div>
         </div>
       )}
@@ -41,7 +42,7 @@ export function TreemapTooltip({ data }: TreemapTooltipProps) {
         aria-atomic="true"
         className="sr-only"
       >
-        {data ? `${data.name}, ${formatCurrency(data.value)}, sobreprecio ${(data.overpricingRate * 100).toFixed(1)}%` : ''}
+        {data ? `${data.name}, ${data.secondary ?? (data.value !== undefined ? formatCurrency(data.value) : '')}${data.overpricingRate !== undefined ? `, sobreprecio ${(data.overpricingRate * 100).toFixed(1)}%` : ''}` : ''}
       </div>
     </>
   );
