@@ -1,26 +1,22 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 export function useScrolled(threshold: number = 50) {
   const [isScrolled, setIsScrolled] = useState(false);
+  const isScrolledRef = useRef(false);
 
   useEffect(() => {
-    // Handle SSR - window not available during server render
-    if (typeof window === 'undefined') return;
-
     const handleScroll = () => {
-      const scrollY = window.scrollY;
-      setIsScrolled(scrollY > threshold);
+      const shouldBeScrolled = window.scrollY > threshold;
+      if (shouldBeScrolled !== isScrolledRef.current) {
+        isScrolledRef.current = shouldBeScrolled;
+        setIsScrolled(shouldBeScrolled);
+      }
     };
 
-    // Set initial state
     handleScroll();
-
-    // Add event listener with passive flag for performance
     window.addEventListener('scroll', handleScroll, { passive: true });
-
-    // Cleanup on unmount
     return () => window.removeEventListener('scroll', handleScroll);
   }, [threshold]);
 

@@ -4,6 +4,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { ExcessBadge } from "./ExcessBadge";
+import { formatCurrency, formatNumber, toSentenceCase } from "@/lib/utils";
 
 export type Purchase = {
   chilecompra_code: string;
@@ -51,8 +52,7 @@ export const columns: ColumnDef<Purchase>[] = [
     },
     cell: ({ row }) => {
       const itemName = row.getValue("item_name") as string;
-      const sentenceCase = itemName.toLowerCase().charAt(0).toUpperCase() + itemName.toLowerCase().slice(1);
-      return <div className="font-light text-wrap min-w-[150px]">{sentenceCase}</div>;
+      return <div className="font-light text-wrap min-w-[150px]">{toSentenceCase(itemName)}</div>;
     },
   },
   {
@@ -90,7 +90,7 @@ export const columns: ColumnDef<Purchase>[] = [
     },
     cell: ({ row }) => {
       const quantity = row.getValue("quantity") as number;
-      return <div className="font-light">{new Intl.NumberFormat("es-CL").format(quantity)}</div>;
+      return <div className="font-light">{formatNumber(quantity)}</div>;
     },
   },
   {
@@ -110,12 +110,7 @@ export const columns: ColumnDef<Purchase>[] = [
     cell: ({ row }) => {
       const price = row.getValue("unit_total_price") as number | null;
       if (price === null) return <div className="font-light">N/A</div>;
-      return <div className="font-light">{new Intl.NumberFormat("es-CL", {
-        style: "currency",
-        currency: "CLP",
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-      }).format(price)}</div>;
+      return <div className="font-light">{formatCurrency(price)}</div>;
     },
   },
   {
@@ -135,12 +130,7 @@ export const columns: ColumnDef<Purchase>[] = [
     cell: ({ row }) => {
       const price = row.getValue("total_price") as number | null;
       if (price === null) return <div className="font-light">N/A</div>;
-      return <div className="font-light">{new Intl.NumberFormat("es-CL", {
-        style: "currency",
-        currency: "CLP",
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-      }).format(price)}</div>;
+      return <div className="font-light">{formatCurrency(price)}</div>;
     },
   },
   {

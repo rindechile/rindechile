@@ -10,7 +10,6 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar: var(--sidebar);
   --color-chart-5: var(--chart-5);
   --color-chart-4: var(--chart-4);
   --color-chart-3: var(--chart-3);
@@ -66,9 +65,9 @@
 
   --destructive: oklch(0.577 0.245 27.325);
 
-  --border: oklch(0.2146 0.0047 33.7977);
+  --border: oklch(0.2246 0.0047 33.7977);
 
-  --input: oklch(0.922 0 0);
+  --input: oklch(0.3246 0.0047 33.7977);
   --ring: oklch(0.708 0 0);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);

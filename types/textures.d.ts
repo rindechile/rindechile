@@ -1,5 +1,5 @@
 declare module 'textures' {
-  import type { Selection } from 'd3';
+  import type { Selection } from 'd3-selection';
 
   interface Texture {
     (selection: Selection<any, any, any, any>): void;

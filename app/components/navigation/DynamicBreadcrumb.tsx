@@ -32,10 +32,10 @@ export function DynamicBreadcrumb() {
     return (
       <Breadcrumb>
         <BreadcrumbList>
-          <BreadcrumbItem className="hidden md:block">
+          <BreadcrumbItem className="hidden tablet:block">
             <BreadcrumbLink href="/">Inicio</BreadcrumbLink>
           </BreadcrumbItem>
-          <BreadcrumbSeparator className="hidden md:block" />
+          <BreadcrumbSeparator className="hidden tablet:block" />
           <BreadcrumbItem>
             <BreadcrumbPage>Metodología</BreadcrumbPage>
           </BreadcrumbItem>
@@ -52,10 +52,10 @@ export function DynamicBreadcrumb() {
     return (
       <Breadcrumb>
         <BreadcrumbList>
-          <BreadcrumbItem className="hidden md:block">
+          <BreadcrumbItem className="hidden tablet:block">
             <BreadcrumbLink href="/">Inicio</BreadcrumbLink>
           </BreadcrumbItem>
-          <BreadcrumbSeparator className="hidden md:block" />
+          <BreadcrumbSeparator className="hidden tablet:block" />
           <BreadcrumbItem>
             <BreadcrumbPage>{regionName}</BreadcrumbPage>
           </BreadcrumbItem>

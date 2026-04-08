@@ -1,6 +1,6 @@
 "use client"
 
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
+import { Area, AreaChart, CartesianGrid } from "recharts"
 import {
   type ChartConfig,
   ChartContainer,
@@ -20,7 +20,7 @@ const chartData = [
 const chartConfig = {
   anomalies: {
     label: "Anomalias",
-    color: "oklch(0.6348 0.229457 33.7977)",
+    color: "var(--secondary)",
   },
 } satisfies ChartConfig
 

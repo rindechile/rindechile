@@ -3,16 +3,15 @@
 import { useState } from "react";
 import {
   ColumnDef,
-  ColumnFiltersState,
   SortingState,
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 import { ExternalLink } from "lucide-react";
+import { getChileCompraUrl } from "@/lib/utils";
 
 import {
   Table,
@@ -48,13 +47,12 @@ export function DataTable<TData, TValue>({
   filterOptions,
   pagination: serverPagination,
   sorting: serverSorting,
+  filters,
   onPageChange,
   onSortingChange,
   onFiltersChange,
 }: DataTableProps<TData, TValue>) {
   const [clientSorting, setClientSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
 
   // Use server-side mode if callbacks are provided
   const useServerMode = !!serverPagination && !!onPageChange && !!onSortingChange && !!onFiltersChange;
@@ -75,7 +73,6 @@ export function DataTable<TData, TValue>({
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: useServerMode ? undefined : getPaginationRowModel(),
     getSortedRowModel: useServerMode ? undefined : getSortedRowModel(),
-    getFilteredRowModel: useServerMode ? undefined : getFilteredRowModel(),
     onSortingChange: useServerMode
       ? (updater) => {
           const newSorting = typeof updater === 'function' ? updater(tableSorting) : updater;
@@ -86,39 +83,39 @@ export function DataTable<TData, TValue>({
           }
         }
       : setClientSorting,
-    onColumnFiltersChange: useServerMode
-      ? (updater) => {
-          const newFilters = typeof updater === 'function' ? updater(columnFilters) : updater;
-          const itemNameFilter = newFilters.find(f => f.id === 'item_name')?.value as string | undefined;
-          const municipalityNameFilter = newFilters.find(f => f.id === 'municipality_name')?.value as string | undefined;
-          onFiltersChange({
-            itemName: itemNameFilter || null,
-            municipalityName: municipalityNameFilter || null,
-          });
-          setColumnFilters(newFilters);
-        }
-      : setColumnFilters,
     onPaginationChange: useServerMode ? undefined : setClientPagination,
     manualPagination: useServerMode,
     manualSorting: useServerMode,
-    manualFiltering: useServerMode,
     pageCount: useServerMode ? serverPagination.totalPages : undefined,
     state: {
       sorting: tableSorting,
-      columnFilters,
       pagination: useServerMode
         ? { pageIndex: serverPagination.page - 1, pageSize: serverPagination.limit }
         : clientPagination,
     },
   });
 
+  // Handler for clearing all filters and sorting
+  const handleClearAll = () => {
+    if (onFiltersChange) {
+      onFiltersChange({ search: null, municipalityName: null });
+    }
+    if (onSortingChange) {
+      onSortingChange(null);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <TableFilters
-        table={table}
+        search={filters?.search ?? null}
+        municipalityName={filters?.municipalityName ?? null}
+        sorting={serverSorting ?? null}
         filterOptions={filterOptions}
-        isOpen={isFiltersOpen}
-        onOpenChange={setIsFiltersOpen}
+        onSearchChange={(value) => onFiltersChange?.({ ...filters, search: value, municipalityName: filters?.municipalityName ?? null })}
+        onMunicipalityChange={(value) => onFiltersChange?.({ ...filters, search: filters?.search ?? null, municipalityName: value })}
+        onSortChange={(sort) => onSortingChange?.(sort)}
+        onClearAll={handleClearAll}
       />
 
       {/* Mobile: Card View */}
@@ -136,16 +133,22 @@ export function DataTable<TData, TValue>({
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
-                ))}
+                {headerGroup.headers.map((header) => {
+                  const sorted = header.column.getIsSorted();
+                  return (
+                    <TableHead
+                      key={header.id}
+                      aria-sort={sorted === 'asc' ? 'ascending' : sorted === 'desc' ? 'descending' : undefined}
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  );
+                })}
                 <TableHead className="w-12" aria-label="Acción">
                   <span className="sr-only">Acción</span>
                 </TableHead>
@@ -158,7 +161,7 @@ export function DataTable<TData, TValue>({
               table.getRowModel().rows.map((row) => {
                 const handleRowActivation = () => {
                   const chilecompraId = (row.original as { chilecompra_code: string }).chilecompra_code;
-                  window.open(`https://www.mercadopublico.cl/PurchaseOrder/Modules/PO/DetailsPurchaseOrder.aspx?codigoOC=${chilecompraId}`, '_blank');
+                  window.open(getChileCompraUrl(chilecompraId), '_blank');
                 };
 
                 return (

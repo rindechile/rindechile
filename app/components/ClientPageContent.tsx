@@ -1,23 +1,28 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useMapContext } from "../contexts/MapContext";
 import { DetailPanel } from "./DetailPanel";
 import MapContainerSuspense from "./map/MapContainerSuspense";
-import { PurchasesTable } from "./purchases/PurchasesTable";
 import { DetailPanelSkeleton } from "./DetailPanelSkeleton";
 import { PurchasesTableSkeleton } from "./purchases/PurchasesTableSkeleton";
+
+const PurchasesTable = dynamic(
+  () => import('./purchases/PurchasesTable').then(mod => ({ default: mod.PurchasesTable })),
+  { loading: () => <PurchasesTableSkeleton /> }
+);
 
 export function ClientPageContent() {
   const { detailPanelData, loading } = useMapContext();
 
   return (
-    <main className="flex flex-col gap-8 w-full">
+    <div className="flex flex-col gap-8 w-full">
 
       {/* Top Section */}
-      <section className="flex flex-col desktop:flex-row w-full gap-8">
+      <section className="flex flex-col desktop:flex-row w-full gap-8" aria-label="Mapa y panel de detalle">
 
         <div className="w-full desktop:w-1/5 flex flex-col gap-4">
-          <section className="p-6 border rounded-lg flex flex-col gap-4">
+          <section className="p-6 border rounded-lg flex flex-col gap-4" aria-label="Descripcion del mapa">
             <h1 className="text-2xl font-semibold">¿Dónde están las compras públicas que merecen atención?</h1>
 
             <p className="text-sm font-regular">
@@ -33,7 +38,7 @@ export function ClientPageContent() {
 
         </div>
 
-        <section className="w-full desktop:w-4/5">
+        <section className="w-full desktop:w-4/5" aria-label="Panel de detalle">
           {loading ? (
             <DetailPanelSkeleton />
           ) : (
@@ -44,14 +49,14 @@ export function ClientPageContent() {
       </section>
 
       {/* Purchases Table Section */}
-      <section className="w-full">
+      <section className="w-full" aria-label="Tabla de compras publicas">
         {loading ? (
           <PurchasesTableSkeleton />
         ) : (
           <PurchasesTable />
         )}
       </section>
-    </main>
+    </div>
   );
 }
 

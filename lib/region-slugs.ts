@@ -83,6 +83,7 @@ export function isValidSlug(slug: string): boolean {
  * @returns Region name or null if invalid
  */
 export function getRegionNameFromSlug(slug: string): string | null {
-  const region = REGION_SLUGS.find(r => r.slug === slug);
-  return region?.name || null;
+  const code = slugToCodeMap.get(slug);
+  if (code === undefined) return null;
+  return codeToNameMap.get(code) ?? null;
 }

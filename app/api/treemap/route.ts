@@ -95,6 +95,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data,
+    }, {
+      headers: { 'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=1800' },
     });
   } catch (error) {
     console.error('Error fetching treemap data:', error);

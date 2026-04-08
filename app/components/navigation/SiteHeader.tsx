@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { SidebarIcon, Search } from 'lucide-react';
-import { AnimatePresence, motion } from 'framer-motion';
 
 import { Button } from '@/app/components/ui/button';
 import { useSidebar } from '@/app/components/ui/sidebar';
@@ -37,45 +36,26 @@ export function SiteHeader() {
           <div className="flex items-center gap-16">
             <Link href="/" className="flex items-center">
               <div className="relative h-[32px] w-[100px]">
-                <AnimatePresence mode="wait">
-                  {!isScrolled ? (
-                    <motion.div
-                      key="text-logo"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="h-full"
-                    >
-                      <Image
-                        src="/logo-text.svg"
-                        alt="RindeChile Logo"
-                        loading="eager"
-                        width={100}
-                        height={32}
-                        className="h-full w-auto object-contain object-left"
-                      />
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="icon-logo"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="flex items-center h-full"
-                    >
-                        <Image
-                          src="/logo-icon.svg"
-                          alt="RindeChile Logo"
-                          loading="eager"
-                          width={32}
-                          height={32}
-                          className="object-contain"
-                        />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                <div className={`absolute inset-0 h-full transition-opacity duration-300 motion-reduce:duration-0 ${!isScrolled ? 'opacity-100' : 'opacity-0'}`}>
+                  <Image
+                    src="/logo-text.svg"
+                    alt="RindeChile Logo"
+                    loading="eager"
+                    width={100}
+                    height={32}
+                    className="h-full w-auto object-contain object-left"
+                  />
+                </div>
+                <div className={`absolute inset-0 flex items-center h-full transition-opacity duration-300 motion-reduce:duration-0 ${isScrolled ? 'opacity-100' : 'opacity-0'}`}>
+                  <Image
+                    src="/logo-icon.svg"
+                    alt="RindeChile Logo"
+                    loading="eager"
+                    width={32}
+                    height={32}
+                    className="object-contain"
+                  />
+                </div>
               </div>
             </Link>
             <Button
@@ -83,6 +63,7 @@ export function SiteHeader() {
               variant="ghost"
               size="icon"
               onClick={toggleSidebar}
+              aria-label="Alternar menu lateral"
             >
               <SidebarIcon className="stroke-muted" />
             </Button>
@@ -96,9 +77,10 @@ export function SiteHeader() {
               variant="ghost"
               className="gap-2"
               onClick={() => setSearchOpen(true)}
+              aria-label="Buscar comuna"
             >
               <Search className="size-4 stroke-muted"/>
-              <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-background px-1.5 font-mono text-[10px] font-medium text-accent-foreground tablet:inline-flex">
+              <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-background px-1.5 font-mono text-[10px] font-medium text-accent-foreground tablet:inline-flex" aria-hidden="true">
                 <span className="text-xs">⌘</span>K
               </kbd>
             </Button>
@@ -109,6 +91,7 @@ export function SiteHeader() {
               variant="ghost"
               size="icon"
               onClick={toggleSidebar}
+              aria-label="Alternar menu lateral"
             >
               <SidebarIcon className="size-4 stroke-muted" />
             </Button>

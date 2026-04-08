@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     const offset = (page - 1) * limit;
 
     // Filtering parameters
-    const itemNameFilter = searchParams.get('itemName');
+    const searchQuery = searchParams.get('search'); // Unified search for item name or ChileCompra ID
     const municipalityNameFilter = searchParams.get('municipalityName');
 
     // Sorting parameters
@@ -78,10 +78,18 @@ export async function GET(request: NextRequest) {
       whereConditions.push(eq(municipalities.region_id, parseInt(regionId)));
     }
 
-    // Apply column filters
-    if (itemNameFilter) {
-      whereConditions.push(eq(items.name, itemNameFilter));
+    // Apply search filter (searches item name and ChileCompra ID)
+    if (searchQuery) {
+      // Escape special LIKE characters to prevent unintended pattern matching
+      const escapedSearch = searchQuery.replace(/[%_]/g, '\\$&');
+      whereConditions.push(
+        or(
+          like(items.name, `%${escapedSearch}%`),
+          like(purchases.chilecompra_code, `${escapedSearch}%`)
+        )
+      );
     }
+    // Apply municipality filter
     if (municipalityNameFilter) {
       whereConditions.push(eq(municipalities.name, municipalityNameFilter));
     }
@@ -152,6 +160,8 @@ export async function GET(request: NextRequest) {
         regionId,
         municipalityId,
       },
+    }, {
+      headers: { 'Cache-Control': 'public, max-age=300, s-maxage=300, stale-while-revalidate=60' },
     });
   } catch (error) {
     console.error('Error fetching purchases data:', error);
