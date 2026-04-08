@@ -21,6 +21,10 @@ const navItems = [
     url: '/',
   },
   {
+    title: 'Proveedores',
+    url: '/suppliers',
+  },
+  {
     title: 'Metodología',
     url: '/methodology',
   },
