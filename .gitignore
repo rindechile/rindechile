@@ -4,7 +4,12 @@
 /schemas/data/*
 /scripts/*.sql
 /scripts/*.json
-/scripts/sql/
+# generated seed SQL, except the hand-written schema-drop file used by db:reset
+/scripts/sql/*
+!/scripts/sql/drop-all-tables.sql
+
+# Claude
+Claude.md
 
 # dependencies
 /node_modules

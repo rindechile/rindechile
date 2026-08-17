@@ -1,4 +1,5 @@
 import type { Table } from "@tanstack/react-table";
+import { formatNumber } from "@/lib/utils";
 
 interface ServerPaginationInfo {
   total: number;
@@ -39,8 +40,6 @@ export function TableStatus<TData>({ table, serverPagination }: TableStatusProps
         totalRows
       );
 
-  // Format numbers with thousand separators for better readability
-  const formatNumber = (num: number) => num.toLocaleString('es-CL');
 
   const statusText = `Mostrando filas ${formatNumber(startRow)} a ${formatNumber(endRow)} de ${formatNumber(totalRows)} ${totalRows === 1 ? 'compra' : 'compras'}`;
 

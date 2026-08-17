@@ -1,9 +1,15 @@
 import { useEffect, useRef, RefObject } from 'react';
-import * as d3 from 'd3';
+import { max, sum } from 'd3-array';
+import { easeQuadOut } from 'd3-ease';
+import { hierarchy, treemap, type HierarchyNode } from 'd3-hierarchy';
+import { interpolate } from 'd3-interpolate';
+import { scaleSequential } from 'd3-scale';
+import { select } from 'd3-selection';
+import 'd3-transition';
 import type { TreemapNode, TreemapHierarchy } from '@/types/map';
 
 // Extended type for D3 treemap nodes with layout properties
-interface TreemapLayoutNode extends d3.HierarchyNode<TreemapNode> {
+interface TreemapLayoutNode extends HierarchyNode<TreemapNode> {
   x0: number;
   y0: number;
   x1: number;
@@ -37,48 +43,51 @@ export function useTreemapRenderer({
   useEffect(() => {
     if (!svgRef.current || !data || dimensions.width === 0) return;
 
-    // Only animate when data changes, not on resize/scroll
-    const shouldAnimate = lastDataRef.current !== data;
+    // Respect reduced motion preference
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Only animate when data changes, not on resize/scroll (and not when user prefers reduced motion)
+    const shouldAnimate = lastDataRef.current !== data && !prefersReducedMotion;
     lastDataRef.current = data;
 
     const { width, height } = dimensions;
 
-    // Create color scale based on purchase value
-    const maxValue = d3.max(data.children, d => d.value) || 1;
-    const colorScale = d3
-      .scaleSequential()
+    // Create color scale based on purchase value, reading tier colors from CSS variables
+    const styles = getComputedStyle(document.documentElement);
+    const tierMedio = styles.getPropertyValue('--tier-medio').trim();
+    const tierAlto = styles.getPropertyValue('--tier-alto').trim();
+    const maxValue = max(data.children, d => d.value) || 1;
+    const colorScale = scaleSequential()
       .domain([0, maxValue])
-      .interpolator(d3.interpolate('oklch(0.652 0.236 320.67)', 'oklch(0.652 0.236 150.67)'));
+      .interpolator(interpolate(tierMedio, tierAlto));
 
     // Clear previous content
-    const svg = d3.select(svgRef.current);
+    const svg = select(svgRef.current);
     svg.selectAll('*').remove();
 
     // Create root node with children
     const rootNode: TreemapNode = {
       id: 0,
       name: data.name,
-      value: d3.sum(data.children, d => d.value),
+      value: sum(data.children, d => d.value),
       overpricingRate: 0,
       children: data.children,
       type: 'category',
     };
 
     // Create hierarchy
-    const root = d3
-      .hierarchy<TreemapNode>(rootNode)
+    const root = hierarchy<TreemapNode>(rootNode)
       .sum(d => d.children ? 0 : d.value) // Only sum leaf nodes
       .sort((a, b) => (b.value || 0) - (a.value || 0));
 
     // Create treemap layout
-    const treemap = d3
-      .treemap<TreemapNode>()
+    const treemapLayout = treemap<TreemapNode>()
       .size([width, height])
       .paddingInner(2)
       .paddingOuter(2)
       .round(true);
 
-    treemap(root);
+    treemapLayout(root);
 
     // Get all leaves
     const leaves = root.leaves() as TreemapLayoutNode[];
@@ -123,7 +132,7 @@ export function useTreemapRenderer({
         .attr('height', 0)
         .transition()
         .duration(400)
-        .ease(d3.easeQuadOut)
+        .ease(easeQuadOut)
         .attr('width', d => d.x1 - d.x0)
         .attr('height', d => d.y1 - d.y0);
     } else {
@@ -135,7 +144,7 @@ export function useTreemapRenderer({
     // Helper function to show hover/focus state
     const showNodeHighlight = (element: Element, d: TreemapLayoutNode) => {
       if (isClickable(d)) {
-        d3.select(element)
+        select(element)
           .style('opacity', 0.85)
           .style('filter', 'brightness(1.1)');
       }
@@ -151,7 +160,7 @@ export function useTreemapRenderer({
 
     // Helper function to hide hover/focus state
     const hideNodeHighlight = (element: Element) => {
-      d3.select(element)
+      select(element)
         .style('opacity', 1)
         .style('filter', 'brightness(1)');
       onNodeHover(null);
@@ -168,14 +177,14 @@ export function useTreemapRenderer({
       })
       .on('focus', (event, d) => {
         // Add focus ring styling
-        d3.select(event.currentTarget)
+        select(event.currentTarget)
           .attr('stroke', 'oklch(0.708 0 0)')
           .attr('stroke-width', 3);
         showNodeHighlight(event.currentTarget, d as TreemapLayoutNode);
       })
       .on('blur', (event) => {
         // Remove focus ring styling
-        d3.select(event.currentTarget)
+        select(event.currentTarget)
           .attr('stroke', '#fff')
           .attr('stroke-width', 1);
         hideNodeHighlight(event.currentTarget);
@@ -211,7 +220,7 @@ export function useTreemapRenderer({
       const maxWidth = width - padding * 2;
 
       // Create text element
-      const textElement = d3.select(this).append('text')
+      const textElement = select(this).append('text')
         .attr('fill', 'currentColor')
         .attr('font-size', `${fontSize}px`)
         .attr('font-weight', '500')

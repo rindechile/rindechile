@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from 'react';
 import type {
   EnrichedRegionData,
   EnrichedMunicipalityData,
@@ -215,11 +215,11 @@ export function MapProvider({
     return null;
   })();
 
-  const handleRetry = () => {
+  const handleRetry = useCallback(() => {
     window.location.reload();
-  };
+  }, []);
 
-  const value: MapContextValue = {
+  const value = useMemo<MapContextValue>(() => ({
     regionsData,
     municipalitiesData,
     nationalAverage,
@@ -234,7 +234,13 @@ export function MapProvider({
     handleBackToCountry,
     handleRetry,
     ariaLiveMessage,
-  };
+  }), [
+    regionsData, municipalitiesData, nationalAverage,
+    viewState, detailPanelData, loading, loadingMunicipalities,
+    error, handleRegionClick, handleMunicipalityClick,
+    handleMunicipalitySelectById, handleBackToCountry,
+    handleRetry, ariaLiveMessage,
+  ]);
 
   return <MapContext.Provider value={value}>{children}</MapContext.Provider>;
 }

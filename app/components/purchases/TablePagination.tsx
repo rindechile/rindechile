@@ -49,7 +49,7 @@ export function TablePagination<TData>({ table, onPageChange }: TablePaginationP
   };
 
   return (
-    <div className="flex items-center space-x-6 lg:space-x-8">
+    <nav aria-label="Paginacion de tabla" className="flex items-center space-x-6 lg:space-x-8">
       {!useServerPagination && (
         <div className="flex items-center space-x-2">
           <p className="text-sm font-medium">Filas por página</p>
@@ -76,7 +76,7 @@ export function TablePagination<TData>({ table, onPageChange }: TablePaginationP
           onClick={handleFirstPage}
           disabled={!canPreviousPage}
         >
-          <span className="sr-only">Go to first page</span>
+          <span className="sr-only">Ir a la primera pagina</span>
           <ChevronsLeft className="h-4 w-4" />
         </Button>
         <Button
@@ -85,7 +85,7 @@ export function TablePagination<TData>({ table, onPageChange }: TablePaginationP
           onClick={handlePreviousPage}
           disabled={!canPreviousPage}
         >
-          <span className="sr-only">Go to previous page</span>
+          <span className="sr-only">Ir a la pagina anterior</span>
           <ChevronLeft className="h-4 w-4" />
         </Button>
         <Button
@@ -94,7 +94,7 @@ export function TablePagination<TData>({ table, onPageChange }: TablePaginationP
           onClick={handleNextPage}
           disabled={!canNextPage}
         >
-          <span className="sr-only">Go to next page</span>
+          <span className="sr-only">Ir a la pagina siguiente</span>
           <ChevronRight className="h-4 w-4" />
         </Button>
         <Button
@@ -103,10 +103,10 @@ export function TablePagination<TData>({ table, onPageChange }: TablePaginationP
           onClick={handleLastPage}
           disabled={!canNextPage}
         >
-          <span className="sr-only">Go to last page</span>
+          <span className="sr-only">Ir a la ultima pagina</span>
           <ChevronsRight className="h-4 w-4" />
         </Button>
       </div>
-    </div>
+    </nav>
   );
 }

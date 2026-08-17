@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import * as d3 from 'd3';
+import { geoMercator, geoPath } from 'd3-geo';
 import type {
   MapViewState,
   EnrichedRegionData,
@@ -53,7 +53,7 @@ export function ChileMap({
 
   // Setup D3 projection centered on Chile or selected region
   const projection = useCallback(() => {
-    const baseProjection = d3.geoMercator();
+    const baseProjection = geoMercator();
     
     if (viewState.level === 'region' && viewState.selectedRegion && municipalitiesData.length > 0) {
       // Use D3's fitExtent to automatically calculate correct projection parameters
@@ -90,7 +90,7 @@ export function ChileMap({
 
   // Create path generator with reactive projection updates
   const pathGenerator = useMemo(
-    () => d3.geoPath().projection(projection()),
+    () => geoPath().projection(projection()),
     [projection]
   );
 
@@ -135,9 +135,8 @@ export function ChileMap({
     [onMunicipalityClick, viewState.level]
   );
 
-  // Get CSS variable values from document
-  const styles = getComputedStyle(document.documentElement);
-  const colorStroke = styles.getPropertyValue('--color-secondary').trim();
+  // Dark-only theme: background is always black
+  const colorStroke = 'oklch(0 0 0)';
 
   return (
     <div ref={containerRef} className="relative">
@@ -145,7 +144,10 @@ export function ChileMap({
         ref={svgRef}
         width={dimensions.width}
         height={dimensions.height}
+        aria-label={viewState.level === 'country' ? 'Mapa interactivo de Chile con regiones' : 'Mapa interactivo de municipalidades de la region seleccionada'}
+        role="img"
       >
+        <title>{viewState.level === 'country' ? 'Mapa de Chile' : 'Mapa de municipalidades'}</title>
         <g className="map-container">
           {/* Render regions when in country view */}
           {viewState.level === 'country' &&
@@ -163,7 +165,7 @@ export function ChileMap({
                   d={pathGenerator(region.feature) || ''}
                   fill={getFill(overpricing)}
                   stroke={colorStroke}
-                  strokeWidth={0.6}
+                  strokeWidth={0.4}
                   className="cursor-pointer transition-all duration-200 hover:opacity-80 hover:stroke-[1.2px] focus:outline-none focus:stroke-[2px] focus:opacity-80"
                   style={{ outline: 'none' }}
                   tabIndex={0}
@@ -196,7 +198,7 @@ export function ChileMap({
                   d={pathGenerator(municipality.feature) || ''}
                   fill={getFill(overpricing)}
                   stroke={colorStroke}
-                  strokeWidth={0.9}
+                  strokeWidth={0.5}
                   className="cursor-pointer transition-all duration-200 hover:opacity-80 hover:stroke-[1.4px] focus:outline-none focus:stroke-[2px] focus:opacity-80"
                   style={{ outline: 'none' }}
                   tabIndex={0}

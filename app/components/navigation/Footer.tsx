@@ -11,16 +11,15 @@ export function Footer() {
           <div className="flex flex-col gap-3">
             <Link 
               href="/" 
-              className="flex flex-row gap-2 tablet:gap-3 items-center w-fit transition-opacity duration-200 hover:opacity-80"
+              className="w-fit transition-opacity duration-200 hover:opacity-80"
             >
               <Image
-                src="/logo.svg"
-                alt="Rinde Chile Logo"
-                width={24}
-                height={24}
+                src="/logo-full.svg"
+                alt="RindeChile Logo"
+                width={128}
+                height={128}
                 className="fill-foreground"
               />
-              <span className="text-base tablet:text-lg font-semibold">Rinde Chile</span>
             </Link>
             <p className="text-sm text-muted-foreground max-w-sm leading-relaxed">
               Plataforma dedicada a monitorear y promover la transparencia en las compras municipales en Chile.
@@ -74,7 +73,7 @@ export function Footer() {
         {/* Copyright */}
         <div className="mt-8 pt-6 border-t border-border flex flex-col tablet:flex-row tablet:justify-between tablet:items-center gap-4">
           <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} Rinde Chile. Todos los derechos reservados.
+            © {new Date().getFullYear()} RindeChile. Todos los derechos reservados.
           </p>
           <div className="flex items-center gap-4">
             <p className="text-xs text-muted-foreground">

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { getSlugFromCode, getCodeFromSlug } from '@/lib/region-slugs';
 import type {
@@ -76,7 +76,7 @@ export function useMapNavigation({
     }
   }, [pathname, regionsData, viewState.level, initialRegionCode]);
 
-  const handleRegionClick = (regionCode: string) => {
+  const handleRegionClick = useCallback((regionCode: string) => {
     const region = regionsData.find(
       (r) => r.feature.properties.codregion.toString() === regionCode
     );
@@ -100,9 +100,9 @@ export function useMapNavigation({
       // Announce to screen readers
       onAnnounce(`Mostrando región ${region.feature.properties.Region}`);
     }
-  };
+  }, [regionsData, router, onAnnounce]);
 
-  const handleMunicipalityClick = (municipalityCode: string) => {
+  const handleMunicipalityClick = useCallback((municipalityCode: string) => {
     const municipality = municipalitiesData.find(
       (m) => m.feature.properties.cod_comuna.toString() === municipalityCode
     );
@@ -125,9 +125,9 @@ export function useMapNavigation({
       // Announce to screen readers
       onAnnounce(`Mostrando detalles de ${municipality.feature.properties.Comuna}`);
     }
-  };
+  }, [municipalitiesData, viewState.selectedRegion, onAnnounce]);
 
-  const handleBackToCountry = () => {
+  const handleBackToCountry = useCallback(() => {
     setViewState({
       level: 'country',
       selectedRegion: null,
@@ -142,9 +142,9 @@ export function useMapNavigation({
 
     // Announce to screen readers
     onAnnounce('Mostrando vista de Chile completo');
-  };
+  }, [router, onAnnounce]);
 
-  const handleMunicipalitySelectById = (municipalityId: number, regionCode: number) => {
+  const handleMunicipalitySelectById = useCallback((municipalityId: number, regionCode: number) => {
     // First, ensure we're viewing the correct region
     const region = regionsData.find(
       (r) => r.feature.properties.codregion === regionCode
@@ -169,7 +169,7 @@ export function useMapNavigation({
       // Announce to screen readers
       onAnnounce(`Mostrando región ${region.feature.properties.Region}`);
     }
-  };
+  }, [regionsData, router, onAnnounce]);
 
   // Auto-select municipality after region change if we have a pending selection
   useEffect(() => {

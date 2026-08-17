@@ -13,7 +13,8 @@ export function PurchasesTableSkeleton() {
   const skeletonRows = Array.from({ length: 10 }, (_, i) => i);
 
   return (
-    <div className="">
+    <div className="" role="status" aria-busy="true" aria-label="Cargando tabla de compras">
+      <span className="sr-only">Cargando datos de compras...</span>
       {/* Title Skeleton */}
       <Skeleton className="h-8 w-64 mb-4" />
 

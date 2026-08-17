@@ -79,6 +79,8 @@ export async function GET(request: NextRequest) {
         regionId,
         municipalityId,
       },
+    }, {
+      headers: { 'Cache-Control': 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=43200' },
     });
   } catch (error) {
     console.error('Error fetching filter options:', error);

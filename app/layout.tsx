@@ -1,43 +1,50 @@
 import type { Metadata } from "next";
 import "./styles/globals.css";
 
-import { Outfit } from "next/font/google";
-import { Info } from "lucide-react";
+import { Manrope } from "next/font/google";
 
-import { Header } from "./components/navigation/Header";
+import { AppSidebar } from "./components/navigation/AppSidebar";
+import { SiteHeader } from "./components/navigation/SiteHeader";
+import { SunsetBanner } from "./components/navigation/SunsetBanner";
 import { Footer } from "./components/navigation/Footer";
-import { Alert, AlertDescription } from "./components/ui/alert";
-import Link from "next/link";
+import { SidebarInset, SidebarProvider } from "./components/ui/sidebar";
 
-const outfit = Outfit({
+const manrope = Manrope({
   subsets: ["latin"],
-  variable: "--font-outfit",
+  variable: "--font-manrope",
   display: "swap"
 });
 
 export const metadata: Metadata = {
-  title: "Rinde Chile - Transparencia en Compras Municipales",
+  title: "RindeChile - Transparencia en Compras Municipales",
   description: "Plataforma dedicada a monitorear y promover la transparencia en las compras municipales en Chile.",
   metadataBase: new URL("https://rindechile.cl"),
+  robots: {
+    index: true,
+    follow: true,
+  },
+  alternates: {
+    canonical: "https://rindechile.cl",
+  },
   openGraph: {
     type: "website",
     locale: "es_CL",
     url: "https://rindechile.cl",
-    siteName: "Rinde Chile",
-    title: "Rinde Chile - Transparencia en Compras Municipales",
+    siteName: "RindeChile",
+    title: "RindeChile - Transparencia en Compras Municipales",
     description: "Plataforma dedicada a monitorear y promover la transparencia en las compras municipales en Chile.",
     images: [
       {
         url: "/opengraph.png",
         width: 1200,
         height: 630,
-        alt: "Rinde Chile - Transparencia en Compras Municipales",
+        alt: "RindeChile - Transparencia en Compras Municipales",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Rinde Chile - Transparencia en Compras Municipales",
+    title: "RindeChile - Transparencia en Compras Municipales",
     description: "Plataforma dedicada a monitorear y promover la transparencia en las compras municipales en Chile.",
     images: ["/opengraph.png"],
   },
@@ -50,29 +57,60 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
+      <head>
+        <link rel="preload" href="/data/chile_regions.json" as="fetch" crossOrigin="anonymous" />
+      </head>
       <body
-        className={`${outfit.variable} flex flex-col min-h-screen antialiased bg-background text-foreground`}
+        className={`${manrope.variable} antialiased bg-background text-foreground`}
       >
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify([
+              {
+                "@context": "https://schema.org",
+                "@type": "Organization",
+                name: "RindeChile",
+                url: "https://rindechile.cl",
+                logo: "https://rindechile.cl/logo-full.svg",
+                description:
+                  "Plataforma dedicada a monitorear y promover la transparencia en las compras municipales en Chile.",
+              },
+              {
+                "@context": "https://schema.org",
+                "@type": "WebSite",
+                name: "RindeChile",
+                url: "https://rindechile.cl",
+                description:
+                  "Plataforma dedicada a monitorear y promover la transparencia en las compras municipales en Chile.",
+                inLanguage: "es",
+              },
+            ]),
+          }}
+        />
+
         {/* Skip to main content link for keyboard users */}
         <a href="#main-content" className="skip-link">
           Saltar al contenido principal
         </a>
 
-        {/* Work in Progress Disclaimer */}
-        <Alert className="w-full py-4 hidden">
-          <Info className="h-4 w-4" />
-          <AlertDescription>
-            Este sitio web está en desarrollo activo. Si te gusta este proyecto, por favor <Link href="https://youtu.be/eC48TKl38LY" target="_blank" rel="noopener noreferrer" className="font-medium underline underline-offset-4 hover:text-primary transition-colors">deja un like en nuestro video de YouTube</Link> para apoyarnos en el concurso del Gobierno de Chile – Transparenta Datos 2025.
-          </AlertDescription>
-        </Alert>
+        <SunsetBanner />
 
-        <Header />
+        <div className="[--header-height:3.5rem]">
+          <SidebarProvider className="flex flex-col">
+            <SiteHeader />
+            <div className="flex flex-1 overflow-hidden">
+              <AppSidebar />
+              <SidebarInset>
+                <main id="main-content" className="flex-1 px-6 py-4 tablet:px-12 tablet:py-8" tabIndex={-1}>
+                  {children}
+                </main>
 
-        <main id="main-content" className="p-6 tablet:p-8 gap-12 tablet:gap-16" tabIndex={-1}>
-          {children}
-        </main>
-
-        <Footer />
+                <Footer />
+              </SidebarInset>
+            </div>
+          </SidebarProvider>
+        </div>
       </body>
     </html>
   );

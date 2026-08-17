@@ -21,7 +21,9 @@ export async function GET() {
       .orderBy(municipalities.name)
       .all();
 
-    return NextResponse.json(result);
+    return NextResponse.json(result, {
+      headers: { 'Cache-Control': 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=43200' },
+    });
   } catch (error) {
     console.error('Error fetching municipalities:', error);
     return NextResponse.json(

@@ -1,5 +1,7 @@
 "use client";
 
+import { formatCurrency } from "@/lib/utils";
+
 type ExcessBadgeProps = {
   percentage: number | null;
   maxAcceptablePrice: number | null;
@@ -7,38 +9,22 @@ type ExcessBadgeProps = {
 };
 
 export function ExcessBadge({ percentage, maxAcceptablePrice, variant = "default" }: ExcessBadgeProps) {
-  // If no percentage or no price range data, show N/A
   if (percentage === null || maxAcceptablePrice === null) {
     return <div className="font-light text-muted-foreground">N/A</div>;
   }
 
-  // Determine color based on excess percentage tiers
-  // bajo (low): 0-20% -> tier-bajo color
-  // medio (medium): 20-50% -> tier-medio color
-  // alto (high): 50%+ -> tier-alto color
   const getTierColor = (percent: number) => {
     if (percent <= 20) {
       return "bg-[var(--tier-bajo)] text-[var(--tier-alto)]";
     } else if (percent <= 50) {
       return "bg-[var(--tier-medio)] text-[var(--tier-bajo)]";
     } else {
-      return "bg-[var(--tier-alto-var)] text-[var(--tier-bajo)]";
+      return "bg-[var(--tier-alto)] text-[var(--tier-bajo)]";
     }
   };
 
   const colorClass = getTierColor(percentage);
-
-  // Format price range for display
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("es-CL", {
-      style: "currency",
-      currency: "CLP",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(price);
-  };
-
-  const priceRange = `${formatPrice(maxAcceptablePrice)}`;
+  const priceRange = formatCurrency(maxAcceptablePrice);
 
   // Compact variant for mobile cards - only shows the badge with "Exceso:" prefix
   if (variant === "compact") {

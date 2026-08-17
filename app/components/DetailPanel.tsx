@@ -2,7 +2,8 @@
 
 import type { DetailPanelData } from '@/app/contexts/MapContext';
 import { Badge } from '@/app/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/app/components/ui/card';
+import { MetricCard } from '@/app/components/ui/metric-card';
+import { AnomaliesAreaChart } from '@/app/components/ui/anomalies-area-chart';
 import { TreemapChart } from '@/app/components/map/TreemapChart';
 import { TreemapSkeleton } from '@/app/components/map/TreemapSkeleton';
 import { getTreemapData } from '@/app/lib/data-service';
@@ -57,10 +58,10 @@ export function DetailPanel({ data }: DetailPanelProps) {
   // Empty state when no data
   if (!data) {
     return (
-      <div className="h-full flex items-center justify-center rounded-lg border border-border bg-card">
+      <div className="h-full flex items-center justify-center rounded-lg border border-border bg-card" role="status">
         <div className="text-center px-6 py-12">
           <svg
-            className="mx-auto h-12 w-12 text-gray-400 mb-4"
+            className="mx-auto h-12 w-12 text-muted-foreground mb-4"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -73,37 +74,16 @@ export function DetailPanel({ data }: DetailPanelProps) {
               d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
             />
           </svg>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <h3 className="text-lg font-medium text-foreground mb-2">
             Selecciona una región en el mapa
           </h3>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             Haz clic en el mapa para ver datos detallados de sobreprecio
           </p>
         </div>
       </div>
     );
   }
-
-  // Get title and subtitle based on level
-  const getTitle = () => {
-    if (data.level === 'country') {
-      return data.name;
-    }
-    if (data.level === 'region') {
-      return data.name;
-    }
-    return data.name; // municipality
-  };
-
-  const getSubtitle = () => {
-    if (data.level === 'country') {
-      return 'Vista Nacional';
-    }
-    if (data.level === 'region') {
-      return 'Vista Regional';
-    }
-    return data.regionName; // municipality shows region name
-  };
 
   // Create a unique key based on the current selection to trigger animations on change
   const contentKey = data.level === 'country'
@@ -113,94 +93,123 @@ export function DetailPanel({ data }: DetailPanelProps) {
     : `municipality-${data.municipalityId}`;
 
   return (
-    <div className="h-full overflow-y-auto rounded-xl bg-card p-8 border border-border">
+    <div className="h-full rounded-lg border border-border flex flex-col">
+
       {/* Header */}
-      <div key={`header-${contentKey}`} className="mb-6 animate-fade-in">
+      <div key={`header-${contentKey}`} className="p-6 animate-fade-in border-b shrink-0">
         <div className="flex items-start justify-between mb-2">
-          <div className="flex-1">
-            <h2 className="text-xl font-semibold">{getTitle()}</h2>
-            <p className="text-sm text-muted-foreground mt-1">{getSubtitle()}</p>
-          </div>
-          <Badge variant={severityInfo.variant} className="text-sm ml-4 shrink-0">
+
+          <h2 className="text-2xl font-semibold">{data.name}</h2>
+
+          <Badge variant={severityInfo.variant} className="text-sm hidden shrink-0">
             {severityInfo.level}
           </Badge>
         </div>
       </div>
 
-      {/* Summary Card */}
-      <div key={`summary-${contentKey}`} className="rounded-lg p-6 border border-border mb-6 animate-fade-in-up animate-stagger-1">
-        <div className="text-center">
-          <p className="text-xs tablet:text-sm text-muted-foreground mb-2">Porcentaje de Anomalías</p>
-          <p className="text-xl tablet:text-2xl desktop:text-3xl font-bold">
-            {formatPercentage(data.data.porcentaje_sobreprecio)}
-          </p>
-        </div>
-      </div>
+      {/* Summary Data*/}
+      <div key={`summary-${contentKey}`} className="p-6 border-b animate-fade-in-up animate-stagger-1 shrink-0">
+        <div className="flex flex-col tablet:flex-row justify-between gap-8">
 
-      {/* Budget Card */}
-      <div key={`budget-${contentKey}`} className="rounded-lg p-6 border border-border mb-6 animate-fade-in-up animate-stagger-2">
-        <div className="text-center">
-          <p className="text-xs tablet:text-sm text-muted-foreground mb-2">
-            {data.level === 'country' ? 'Gasto Total Nacional' :
-             data.level === 'region' ? 'Gasto Total Regional' :
-             'Gasto Total Municipal'}
-          </p>
-          {data.budget !== null ? (
-            <>
-              <p className="text-xl tablet:text-2xl desktop:text-3xl font-bold">
-                {formatCurrency(data.budget)}
-              </p>
-              {data.level === 'municipality' && data.budgetPerCapita !== null && (
-                <p className="text-sm text-muted-foreground mt-2">
-                  {formatCurrency(data.budgetPerCapita)} per cápita
-                </p>
-              )}
-            </>
-          ) : (
-            <p className="text-2xl text-muted-foreground">
-              No disponible
-            </p>
-          )}
+          <div className='flex flex-col w-full max-w-[48rem] tablet:flex-row gap-8 items-stretch'>
+            <MetricCard
+              value={formatPercentage(data.data.porcentaje_sobreprecio)}
+              label="Porcentaje de Anomalías"
+            />
+            <div className="flex-1 desktop:max-h-22">
+              <AnomaliesAreaChart />
+            </div>
+          </div>
+
+          <div className='flex flex-col tablet:flex-row gap-4'>
+            <MetricCard
+              variant="ghost"
+              value={data.budget !== null ? formatCurrency(data.budget) : 'No disponible'}
+              label= {data.level === 'country' ? 'Gasto Total Nacional' :
+                      data.level === 'region' ? 'Gasto Total Regional' :
+                      'Gasto Total Municipal'}
+            />
+
+            {data.level === 'municipality' && data.budgetPerCapita !== null && (
+              <MetricCard
+                variant="ghost"
+                value={formatCurrency(data.budgetPerCapita)}
+                label= "Per Cápita"
+              />
+            )}
+          </div>
         </div>
       </div>
 
       {/* Treemap Visualization */}
-      <div key={`treemap-${contentKey}`} className="rounded-lg border border-border p-6 mb-6 animate-fade-in-up animate-stagger-3">
+      <div key={`treemap-${contentKey}`} className="p-6 flex flex-col animate-fade-in-up animate-stagger-3 flex-1 min-h-0">
         <h3 className="text-md font-medium mb-4">¿Dónde se concentra el sobregasto?</h3>
         <p className="text-xs tablet:text-sm font-light pb-4">Los bloques más grandes indican las categorías con mayor volumen de gasto en compras que pagaron significativamente más que el precio histórico normal.</p>
-        {loadingTreemap && <TreemapSkeleton />}
-        {treemapError && (
-          <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <svg
-                className="mx-auto h-12 w-12 text-destructive mb-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                />
-              </svg>
-              <p className="text-sm text-destructive">{treemapError}</p>
+        <div className="flex-1 min-h-0 w-full flex items-center">
+          {loadingTreemap && <TreemapSkeleton />}
+          {treemapError && (
+            <div className="flex items-center justify-center h-full" role="alert">
+              <div className="text-center">
+                <svg
+                  className="mx-auto h-12 w-12 text-destructive mb-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+                <p className="text-sm text-destructive">{treemapError}</p>
+              </div>
+            </div>
+          )}
+          {!loadingTreemap && !treemapError && treemapData && (
+            <div className="w-full">
+              <TreemapChart
+                data={treemapData}
+                {...getTreemapProps()}
+              />
+            </div>
+          )}
+          {!loadingTreemap && !treemapError && !treemapData && (
+            <div className="text-center h-full flex items-center justify-center">
+              <p className="text-sm text-muted-foreground">No hay datos disponibles</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Legend and Disclaimer */}
+      <div key={`footer-${contentKey}`} className="border-t animate-fade-in-up animate-stagger-4 flex flex-col gap-8 desktop:flex-row justify-between shrink-0">
+        <div className='flex flex-col gap-4 p-6'>
+          <h4 className=''>Porcentaje de compras con sobreprecio</h4>
+          <div className='flex flex-row gap-4'>
+
+            <div className='flex flex-col gap-2 w-full'>
+              <p className='text-xs'>Bajo</p>
+              <div className='h-4 w-full desktop:w-32 rounded-xs bg-foreground'></div>
+            </div>
+
+            <div className='flex flex-col gap-2 w-full'>
+              <p className='text-xs'>Medio</p>
+              <div className='h-4 w-full desktop:w-32 rounded-xs bg-muted'></div>
+            </div>
+
+            <div className='flex flex-col gap-2 w-full'>
+              <p className='text-xs'>Alto</p>
+              <div className='h-4 w-full desktop:w-32 rounded-xs bg-secondary'></div>
             </div>
           </div>
-        )}
-        {!loadingTreemap && !treemapError && treemapData && (
-          <TreemapChart
-            data={treemapData}
-            level={getTreemapProps().level}
-            code={getTreemapProps().code}
-          />
-        )}
-        {!loadingTreemap && !treemapError && !treemapData && (
-          <div className="text-center py-12">
-            <p className="text-sm text-muted-foreground">No hay datos disponibles</p>
-          </div>
-        )}
+        </div>
+
+        <div className='flex flex-col gap-4 border-t desktop:border-t-0 p-6'>
+          <h4 className=''>Descargo de responsabilidad</h4>
+          <p className='text-xs'>Este análisis se basa únicamente en los datos públicos disponibles y constituye un indicio, no una conclusión definitiva. Determinar de forma completa la existencia de sobreprecio requiere un análisis más profundo, que considere las condiciones específicas de cada compra.</p>
+        </div>
       </div>
 
     </div>
