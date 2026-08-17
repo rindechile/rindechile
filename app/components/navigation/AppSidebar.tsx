@@ -8,12 +8,10 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/app/components/ui/sidebar';
-import { DynamicBreadcrumb } from './DynamicBreadcrumb';
 
 const navItems = [
   {
@@ -31,10 +29,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar variant="inset" {...props}>
-      <SidebarHeader className="p-4">
-        <DynamicBreadcrumb />
-      </SidebarHeader>
-
       <SidebarContent className="pt-36">
         <SidebarGroup>
           <SidebarGroupContent>

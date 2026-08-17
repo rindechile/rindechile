@@ -5,6 +5,7 @@ import { Manrope } from "next/font/google";
 
 import { AppSidebar } from "./components/navigation/AppSidebar";
 import { SiteHeader } from "./components/navigation/SiteHeader";
+import { SunsetBanner } from "./components/navigation/SunsetBanner";
 import { Footer } from "./components/navigation/Footer";
 import { SidebarInset, SidebarProvider } from "./components/ui/sidebar";
 
@@ -92,6 +93,8 @@ export default function RootLayout({
         <a href="#main-content" className="skip-link">
           Saltar al contenido principal
         </a>
+
+        <SunsetBanner />
 
         <div className="[--header-height:3.5rem]">
           <SidebarProvider className="flex flex-col">

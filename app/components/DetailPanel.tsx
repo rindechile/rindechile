@@ -207,8 +207,8 @@ export function DetailPanel({ data }: DetailPanelProps) {
         </div>
 
         <div className='flex flex-col gap-4 border-t desktop:border-t-0 p-6'>
-          <h4 className=''>Disclaimer</h4>
-          <p className='text-xs'>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. </p>
+          <h4 className=''>Descargo de responsabilidad</h4>
+          <p className='text-xs'>Este análisis se basa únicamente en los datos públicos disponibles y constituye un indicio, no una conclusión definitiva. Determinar de forma completa la existencia de sobreprecio requiere un análisis más profundo, que considere las condiciones específicas de cada compra.</p>
         </div>
       </div>
 
